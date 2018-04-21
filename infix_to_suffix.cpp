@@ -249,6 +249,7 @@ int rpn(vector<string> &suffix_exp)
         }
         return result;
 }
+
 int main(int argc, char *argv[])
 {
         vector<string> suffix;
