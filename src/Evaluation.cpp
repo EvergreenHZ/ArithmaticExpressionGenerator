@@ -8,7 +8,7 @@ using namespace std;
 /**
  * check space
  */
-bool isSpace(char c)
+bool Evaluation::isSpace(char c)
 {
         if (c == ' ' || c == '\t')
                 return true;
@@ -145,7 +145,7 @@ vector<string> Evaluation::infixToSuffix(const string &ori_string)
         vector<string> stack_operators;
         vector<string> suffix;
 
-        cout << infix << endl;
+        //cout << infix << endl;
 
         for (int i = 0; i < infix.size(); i++) {
                 //cout << infix.size() << endl;
@@ -171,16 +171,16 @@ vector<string> Evaluation::infixToSuffix(const string &ori_string)
 
                         handleOperator(suffix, infix[i], stack_operators);
                 }
-                print_vector_string(suffix);
-                print_vector_string(stack_operators);
+                //print_vector_string(suffix);
+                //print_vector_string(stack_operators);
         }
 
         while (stack_operators.size() > 0) {
                 suffix.push_back(stack_operators.back());
                 stack_operators.pop_back();
         }
-        print_vector_string(suffix);
-        print_vector_string(stack_operators);
+        //print_vector_string(suffix);
+        //print_vector_string(stack_operators);
         return suffix;
 }
 
