@@ -33,32 +33,28 @@ bool ArithmaticExpression::cast_coin()
         }
 }
 
+void ArithmaticExpression::swap(int& a, int& b)
+{
+        int t = a;
+        a = b;
+        b = t;
+}
+
 int ArithmaticExpression::gen_random()
 {
-        //srand(time(NULL));
         int x;
-        //while ( (x = sequence[rand() % (MODULE - 1)]) == 0) {  // bad number
-        //        random_shuffle(sequence.begin(), sequence.end());
-        //}
-        x = sequence[rand() % (MODULE - 1)];
-        random_shuffle(sequence.begin(), sequence.end());
-        //x = sequence[rand() % (MODULE - 1)];
-        x = sequence[x];
+        while ( (x = rand() % MODULE) == 0) {
+                ;
+        }
         return x;  // 1 <= x <= MODULE - 1
 }
 
 int ArithmaticExpression::get_random(int module)
 {
         int x;
-        x = sequence[rand() % (MODULE - 1)];
-        random_shuffle(sequence.begin(), sequence.end());
-        //x = sequence[rand() % (MODULE - 1)];
-        x = sequence[x];
-        //random_shuffle(sequence.begin(), sequence.end());
-        //x = sequence[rand() % (MODULE - 1)];
-        //while ( (x = rand() % module) == 0) {  // bad number
-        //        random_shuffle(sequence.begin(), sequence.end());
-        //}
+        while ( (x = rand() % module) == 0) {
+                ;
+        }
         return x;  // 1 <= x <= module - 1
 }
 
@@ -114,11 +110,10 @@ bool ArithmaticExpression::a_plus_b(vector<string> &exp)
         a = gen_random();  // a >= 1
         cast_coin();
         b = gen_random();  // b >= 1
-        //cout << a << " " << b <<endl;
         if (a < b) {
                 int t = a;
                 a = b;
-                b = a;
+                b = t;
         }
         // a >= b
         while (a + b > MODULE) {
@@ -154,13 +149,11 @@ bool ArithmaticExpression::a_minus_b(vector<string> &exp)
         a = gen_random();  // a >= 1
         cast_coin();
         b = gen_random();  // b >= 1
-        //cout << a << " " << b <<endl;
         if (a < b) {
                 int t = a;
                 a = b;
                 b = t;
         }
-        //cout << a << " " << b <<endl;
 
         string aa, bb;
         int_to_string(a, aa);
@@ -274,26 +267,24 @@ bool ArithmaticExpression::split_a_plus_b(const int c, int &a, int &b)
                 while ( (x = get_random(c)) == 0) {
                         ;
                 }
-                a = x;
-                b = c - a;
+                a = x;  // a is ok
+                b = c - a;  // c = a + b
         }
         return true;
 }
 
 bool ArithmaticExpression::split_a_minus_b(const int c, int &a, int &b)
 {
+        // let c = a - b
         /* c should not be too small or too large */
-        if (!good_enough(c)) {
+        if (!good_enough(c) || (c > gen_random())) {
                 return false;
         } else {
-                int i = 0;
-                while (a > MODULE && i < 100) {
-                        i++;
-                        b = get_random(c);
-                        a = c + b;
-                }
-                if (i >= 100) {
-                        return false;
+                b = gen_random();
+                a = b + c;
+                while (a > MODULE) {
+                        b = (b + 1) / 2;
+                        a = b + c;
                 }
         }
         return true;
@@ -316,12 +307,13 @@ bool ArithmaticExpression::split_a_over_b(const int c, int &a, int &b)
         if (!good_enough(c)) {
                 return false;
         }
-        //vector<int> factors;
-        //get_factors(c, factors);
+        if (c > (MODULE + 1) / 2) {  // c should not be too large
+                return false;
+        }
         int x = gen_random();
-        if ( (x * c > MODULE)) {
-                x /= 2;
-        }  // x won't be 0
+        while ( (x * c > MODULE)) {
+                x = (x + 1) / 2;
+        }
         a = x * c;
         b = x;
 
@@ -351,7 +343,7 @@ bool ArithmaticExpression::collect_a_op_b_op_c(int a, int b, int c, char op1, ch
 /***********************************************************************/
 bool ArithmaticExpression::find_good_y_for_x_times_y(const int x, int &y)
 {
-        if (!good_enough(x)) {
+        if (!good_enough(x) || (x > (MODULE + 1) / 2)) {
                 return false;
         } else {
                 y = gen_random();
@@ -408,7 +400,6 @@ vector<string> ArithmaticExpression::gen_a_op_b_op_c()
         string str_op1, str_op2;
 
         int answer = gen_random();
-
         op1 = gen_operator();
 
         if (op1 == '+') {
@@ -418,19 +409,19 @@ vector<string> ArithmaticExpression::gen_a_op_b_op_c()
 
                         if (op2 == '+') {
                                 int tmp_b = b;
-                                if (split_a_plus_b(tmp_b, b, c)) {  // now a + b + c is ok
+                                if (split_a_plus_b(tmp_b, b, c)) {  // now a + b + c
                                         collect_a_op_b_op_c(a, b, c, op1, op2, exp);
                                         return exp;
                                 }
 
                         } else if (op2 == '-') {
                                 int tmp_b = b;
-                                if (split_a_minus_b(tmp_b, b, c)) {  // now a + b - c is ok
+                                if (split_a_minus_b(tmp_b, b, c)) {  // now a + b - c
                                         collect_a_op_b_op_c(a, b, c, op1, op2, exp);
                                         return exp;
                                 }
                         } else if (op2 == '*') {
-                                if (find_good_y_for_x_times_y(answer, c)) {  // now (a + b) * c
+                                if (find_good_y_for_x_times_y(answer, c)) {  //(a + b) * c
                                         vector<string> tmp;
                                         collect_a_op_b_op_c(a, b, c, op1, op2, tmp);
                                         exp.push_back(string(1, '('));
@@ -441,9 +432,16 @@ vector<string> ArithmaticExpression::gen_a_op_b_op_c()
                                         exp.push_back(tmp[3]);
                                         exp.push_back(tmp[4]);
                                         return exp;
+                                } else {  // a + b * c
+                                        int tmp_b = b;
+                                        if (split_a_times_b(tmp_b, b, c)) {
+                                                collect_a_op_b_op_c(a, b, c, op1, op2, exp);
+                                                return exp;
+                                        }
                                 }
+
                         } else if (op2 == '/') {  // now (a + b) / c
-                                if (find_good_y_for_x_over_y(answer, c)) {  // now (a + b) / c
+                                if (find_good_y_for_x_over_y(answer, c)) {  //(a + b) / c
                                         vector<string> tmp;
                                         collect_a_op_b_op_c(a, b, c, op1, op2, tmp);
                                         exp.push_back(string(1, '('));
@@ -454,6 +452,12 @@ vector<string> ArithmaticExpression::gen_a_op_b_op_c()
                                         exp.push_back(tmp[3]);
                                         exp.push_back(tmp[4]);
                                         return exp;
+                                } else {  // a + b / c
+                                        int tmp_b = b;
+                                        if (split_a_over_b(tmp_b, b, c)) {
+                                                collect_a_op_b_op_c(a, b, c, op1, op2, exp);
+                                                return exp;
+                                        }
                                 }
                         }
                 }
@@ -670,21 +674,15 @@ vector<string> ArithmaticExpression::gen_a_op_b_op_c()
                                         }
                                 }
                         } else if (op2 == '*') {  // a / b * c
-                                a = answer;
-                                vector<int> factors;
-                                get_factors(a, factors);
-
-                                int t = factors[0];
-                                split_a_times_b(t, b, c);
-                                collect_a_op_b_op_c(a, b, c, op1, op2, exp);
-                                return exp;
+                                if (find_good_y_for_x_times_y(answer, c)) {
+                                        collect_a_op_b_op_c(a, b, c, op1, op2, exp);
+                                        return exp;
+                                }
                         } else {  // a / b / c
-                                vector<int> factors;
-                                get_factors(b, factors);
-
-                                int c = factors[0];
-                                collect_a_op_b_op_c(a, b, c, op1, op2, exp);
-                                return exp;
+                                if (find_good_y_for_x_over_y(answer, c)) {
+                                        collect_a_op_b_op_c(a, b, c, op1, op2, exp);
+                                        return exp;
+                                }
                         }
                 }
         }

@@ -29,6 +29,7 @@ class ArithmaticExpression {
                 bool cast_coin();
                 int get_random(int);
                 char gen_operator();
+                void swap(int&, int&);
 
                 bool collect_a_op_b_op_c(int, int, int, \
                                 char, char, std::vector<std::string> &);
