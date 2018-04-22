@@ -2,6 +2,7 @@
 #include <string>
 #include <stack>
 #include <vector>
+#include "Evaluation.h"
 using namespace std;
 
 /**
@@ -17,7 +18,7 @@ bool isSpace(char c)
 /**
  * check operator
  */
-bool isOperator(char c)
+bool Evaluation::isOperator(char c)
 {
         switch(c) {
                 case '+':
@@ -35,7 +36,7 @@ bool isOperator(char c)
 /**
  * check number
  */
-bool isNumber(char c)
+bool Evaluation::isNumber(char c)
 {
         if ( (c >= '0') && (c <= '9')) {
                 return true;
@@ -46,7 +47,7 @@ bool isNumber(char c)
 /**
  * get priority
  */
-int getPriority(char op)
+int Evaluation::getPriority(char op)
 {
         switch(op) {
                 case '+':
@@ -63,7 +64,7 @@ int getPriority(char op)
 /**
  * compare priority
  */
-bool superier(char op1, char op2)
+bool Evaluation::superier(char op1, char op2)
 {
         if (op1 == '*' || op1 == '/') {
                 if (op2 == '+' || op2 == '-') {
@@ -72,10 +73,9 @@ bool superier(char op1, char op2)
         }
 
         return false;
-        //return getPriority(op1) > getPriority(op2);
 }
 
-bool inferier(char op1, char op2)
+bool Evaluation::inferier(char op1, char op2)
 {
         if (op1 == '+' || op1 == '-') {
                 if (op2 == '+' || op2 == '-' ||
@@ -90,24 +90,12 @@ bool inferier(char op1, char op2)
                 }
         }
         return false;
-        //return getPriority(op1) <= getPriority(op2);
 }
 
 /**
- * pop opreators util confronting a low priority op
- */
-//void popOperators(vector<string> &suffix, char op, vector<string> &stack_operators)
-//{
-//        while (stack_operators.size() > 0 && inferier(op, (stack_operators.back())[0])) {
-//                suffix.push_back(stack_operators.back());
-//                stack_operators.pop_back();
-//        }
-//        return ;
-//}
-/**
  * handle operators
  */
-void handleOperator(vector<string> &suffix, char op, vector<string> &stack_operators)
+void Evaluation::handleOperator(vector<string> &suffix, char op, vector<string> &stack_operators)
 {
         switch(op) {
                 case '+':
@@ -141,7 +129,7 @@ void handleOperator(vector<string> &suffix, char op, vector<string> &stack_opera
         }
 }
 
-void print_vector_string(vector<string> &s)
+void Evaluation::print_vector_string(vector<string> &s)
 {
         for (int i = 0; i < s.size(); i++) {
                 cout << s[i] << " ";
@@ -151,7 +139,7 @@ void print_vector_string(vector<string> &s)
 /**
  * infix to suffix
  */
-vector<string> infixToSuffix(const string &ori_string)
+vector<string> Evaluation::infixToSuffix(const string &ori_string)
 {
         string infix(ori_string);
         vector<string> stack_operators;
@@ -196,14 +184,14 @@ vector<string> infixToSuffix(const string &ori_string)
         return suffix;
 }
 
-bool is_operator(const string& s)
+bool Evaluation::is_operator(const string& s)
 {
         char c = s[0];
         return (c == '+' || c == '-' ||
                 c == '*' || c == '/');
 }
 
-int eval(int lhs, int rhs, string op)
+int Evaluation::eval(int lhs, int rhs, string op)
 {
         switch (op[0]) {
                 case '+':
@@ -219,7 +207,7 @@ int eval(int lhs, int rhs, string op)
         }
 }
 
-int rpn(vector<string> &suffix_exp)
+int Evaluation::rpn(vector<string> &suffix_exp)
 {
         vector<int> stack;
 
@@ -250,12 +238,9 @@ int rpn(vector<string> &suffix_exp)
         return result;
 }
 
-int main(int argc, char *argv[])
+int Evaluation::solution(string infix_expression)
 {
         vector<string> suffix;
-
-        suffix = infixToSuffix(" 1 + 2 * 3 - 4 /2 * (2 + 1)");
-        cout << rpn(suffix) << endl;
-
-        return 0;
+        suffix = infixToSuffix(infix_expression);
+        return rpn(suffix);
 }
