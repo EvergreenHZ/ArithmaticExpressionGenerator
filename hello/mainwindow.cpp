@@ -131,7 +131,8 @@ void MainWindow::buttonCancelClicked()
 
 void MainWindow::buttonPreviewClicked()
 {
-        system("rm result && gedit result");
+        system("libreoffice --writer result");
+        //system("gedit result");
 }
 
 void MainWindow::buttonGenAnsClicked()
