@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
         quantity = 0;
         range    = 0;
         type     = 0;
+        title    = string("Quiz 1");
         saved_name = string("result");
 
         QWidget *widget = new QWidget;
@@ -97,9 +98,9 @@ MainWindow::MainWindow(QWidget *parent) :
                         this, SLOT(comboboxQuantity(const QString&)));
         connect(combobox_range   , SIGNAL(currentIndexChanged(const QString&)),\
                         this, SLOT(comboboxRange(const QString&)));
-        connect(combobox_type    , SIGNAL(textChanged(const QString&)),\
+        connect(combobox_type    , SIGNAL(currentIndexChanged(const QString&)),\
                         this, SLOT(comboboxType(const QString&)));
-        connect(line_edit_title, SIGNAL(currentIndexChanged(const QString&)),\
+        connect(line_edit_title, SIGNAL(textChanged(const QString&)),\
                         this, SLOT(lineEditTitle(const QString&)));
 
         connect(button_confirm, SIGNAL(clicked()), this, SLOT(buttonConfirmClicked()));
@@ -186,7 +187,8 @@ void MainWindow::comboboxType(const QString& type)
 void MainWindow::lineEditTitle(const QString & title)
 {
         string tmp_title = title.toStdString();
-        this->title = tmp_title;
+        const char *data = tmp_title.c_str();
+        this->title = string(data);
 }
 
 
@@ -266,20 +268,46 @@ bool MainWindow::createExpressions()
 
 bool MainWindow::saveResult()
 {
-        ofstream file(saved_name.c_str(), ios::app);
+        ofstream file(saved_name.c_str(), ios::trunc);
         // write files
+        file << "\t\t\t" << title << "\t\t\t" <<endl;
+        file << "\t" << "name:\t\t" << "score:\t\t" <<endl;
+
+
+        int max_length = str_exps[0].size();
+        for (int i = 0; i < str_exps.size(); i++) {
+                if (max_length < str_exps[i].size()) {
+                        max_length = str_exps[i].size();
+                }
+                qInfo() << "max_length: " << max_length << endl;
+        }
+        max_length++;
+        qInfo() << "max_length: " << max_length << endl;
+
+        //vector<string> tmp_str_exps;
+        for (int i = 0; i < str_exps.size(); i++) {
+                int j = 0;
+                if (str_exps[i].size() < max_length) {
+                        for (j = str_exps[i].size(); j < max_length; j++) {
+                                str_exps[i].push_back(' ');
+                        }
+                }
+                str_exps[i].push_back('=');
+                str_exps[i].push_back('\t');
+        }
         
         int cols = 2;
         int int_quantity = INT_QUANTITY_TYPE[quantity];
         int rows = int_quantity / 2;
         for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
-                        file << str_exps[i * cols + j] << '\t';
-                        cout  << str_exps[i * cols + j] << '\t';
+                        file << str_exps[i * cols + j] << '\t' << '\t';
+                        //cout  << str_exps[i * cols + j] << '\t';
                 }
-                cout << endl;
+                //cout << endl;
                 file << endl;
         }
+        file.close();
         return true;
 }
 
@@ -289,10 +317,25 @@ bool MainWindow::createAnswers(vector<int> &ans)
         if (str_exps.size() == 0) {
                 return false;
         }
+        //string answer_saved_name = string("answer_of_") + saved_name;
+        //ofstream answer_file(answer_saved_name.c_str(), ios::trunc);
 
         Evaluation evaluator;
         for (int i = 0; i < str_exps.size(); i++) {
-                ans.push_back(evaluator.solution(str_exps[i]));
+                //ans.push_back(evaluator.solution(str_exps[i]));
+                int answer_of_current = evaluator.solution(str_exps[i]);
+                str_exps[i] += to_string(answer_of_current);
+        }
+
+        ofstream file("answer.txt", ios::trunc);
+        int cols = 2;
+        int int_quantity = INT_QUANTITY_TYPE[quantity];
+        int rows = int_quantity / 2;
+        for (int i = 0; i < str_exps.size(); i++) {
+                for (int j = 0; j < cols; j++) {
+                        file << str_exps[i * cols + j] << '\t' << '\t';
+                }
+                file << endl;
         }
 
         return true;
